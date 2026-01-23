@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Network Design System - Architecture Visualization</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      }
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      }
+      h1 {
+        color: #2c3e50;
+        text-align: center;
+        margin-bottom: 10px;
+      }
+      .subtitle {
+        text-align: center;
+        color: #7f8c8d;
+        margin-bottom: 40px;
+      }
+      .visualization {
+        margin: 30px 0;
+        border: 2px solid #ecf0f1;
+        border-radius: 8px;
+        padding: 20px;
+        background: #f8f9fa;
+      }
+      .viz-title {
+        font-size: 20px;
+        font-weight: bold;
+        color: #34495e;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 3px solid #3498db;
+      }
+      .node {
+        cursor: pointer;
+      }
+      .node circle {
+        stroke: #fff;
+        stroke-width: 3px;
+      }
+      .node text {
+        font: 12px sans-serif;
+        fill: #2c3e50;
+      }
+      .link {
+        fill: none;
+        stroke: #95a5a6;
+        stroke-width: 2px;
+      }
+      .tooltip {
+        position: absolute;
+        padding: 10px;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        border-radius: 5px;
+        pointer-events: none;
+        font-size: 12px;
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+      .legend {
+        margin-top: 20px;
+        padding: 15px;
+        background: white;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+      }
+      .legend-item {
+        display: inline-block;
+        margin-right: 20px;
+        margin-bottom: 10px;
+      }
+      .legend-color {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        margin-right: 8px;
+        vertical-align: middle;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🏗️ Network Design System Architecture</h1>
+      <p class="subtitle">
+        Interactive D3.js Visualization - Postgres-Backed Multi-Agent AI System
+      </p>
+
+      <!-- Architecture Overview -->
+      <div class="visualization">
+        <div class="viz-title">
+          📊 System Architecture - Component Hierarchy
+        </div>
+        <div id="architecture-tree"></div>
+        <div class="legend">
+          <div class="legend-item">
+            <span class="legend-color" style="background: #3498db"></span>
+            <span>Frontend Layer</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-color" style="background: #e74c3c"></span>
+            <span>API Layer</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-color" style="background: #f39c12"></span>
+            <span>AI Agents</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-color" style="background: #2ecc71"></span>
+            <span>Data Storage</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-color" style="background: #9b59b6"></span>
+            <span>Integration</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data Flow Visualization -->
+      <div class="visualization">
+        <div class="viz-title">🔄 Data Flow - Request to Response Pipeline</div>
+        <div id="data-flow"></div>
+      </div>
+
+      <!-- Database Schema -->
+      <div class="visualization">
+        <div class="viz-title">🗄️ Postgres Database Schema</div>
+        <div id="database-schema"></div>
+      </div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+      // Architecture Tree Visualization
+      const architectureData = {
+        name: "Network Design System",
+        type: "root",
+        children: [
+          {
+            name: "Frontend Layer",
+            type: "frontend",
+            children: [
+              { name: "Next.js App", type: "frontend", size: 3000 },
+              { name: "Upload Page", type: "frontend", size: 1500 },
+              { name: "Validation Page", type: "frontend", size: 1800 },
+              { name: "Design Generator", type: "frontend", size: 2000 },
+              { name: "Audit Viewer", type: "frontend", size: 1200 },
+            ],
+          },
+          {
+            name: "API Layer",
+            type: "api",
+            children: [
+              { name: "FastAPI Gateway", type: "api", size: 2500 },
+              { name: "Design Routes", type: "api", size: 1500 },
+              { name: "Validation Routes", type: "api", size: 1300 },
+              { name: "Audit Routes", type: "api", size: 1000 },
+              { name: "Salesforce Routes", type: "api", size: 1200 },
+            ],
+          },
+          {
+            name: "AI Agent Layer",
+            type: "ai",
+            children: [
+              { name: "Requirements Analyzer", type: "ai", size: 2000 },
+              { name: "RAG Retrieval Agent", type: "ai", size: 2200 },
+              { name: "Design Synthesizer", type: "ai", size: 2500 },
+              { name: "Validation Agent", type: "ai", size: 2300 },
+            ],
+          },
+          {
+            name: "Data Storage",
+            type: "storage",
+            children: [
+              {
+                name: "PostgreSQL (Authoritative)",
+                type: "storage",
+                size: 3500,
+              },
+              { name: "MongoDB (Vectors)", type: "storage", size: 2800 },
+              { name: "Redis (Cache)", type: "storage", size: 1500 },
+            ],
+          },
+          {
+            name: "Integration Layer",
+            type: "integration",
+            children: [
+              { name: "Salesforce Client", type: "integration", size: 1800 },
+              { name: "PDF Ingestion", type: "integration", size: 1600 },
+              { name: "Vector Store", type: "integration", size: 1400 },
+            ],
+          },
+        ],
+      };
+
+      const width = 1200;
+      const height = 600;
+
+      const colorScale = {
+        frontend: "#3498db",
+        api: "#e74c3c",
+        ai: "#f39c12",
+        storage: "#2ecc71",
+        integration: "#9b59b6",
+        root: "#34495e",
+      };
+
+      // Create tree layout
+      const tree = d3.tree().size([height - 100, width - 300]);
+      const root = d3.hierarchy(architectureData);
+      tree(root);
+
+      const svg = d3
+        .select("#architecture-tree")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .append("g")
+        .attr("transform", "translate(100,50)");
+
+      // Add links
+      svg
+        .selectAll(".link")
+        .data(root.links())
+        .enter()
+        .append("path")
+        .attr("class", "link")
+        .attr(
+          "d",
+          d3
+            .linkHorizontal()
+            .x((d) => d.y)
+            .y((d) => d.x),
+        );
+
+      // Add nodes
+      const node = svg
+        .selectAll(".node")
+        .data(root.descendants())
+        .enter()
+        .append("g")
+        .attr("class", "node")
+        .attr("transform", (d) => `translate(${d.y},${d.x})`)
+        .on("mouseover", function (event, d) {
+          d3.select("#tooltip")
+            .style("opacity", 1)
+            .html(
+              `<strong>${d.data.name}</strong><br/>Type: ${d.data.type}${d.data.size ? `<br/>Size: ${d.data.size} LOC` : ""}`,
+            )
+            .style("left", event.pageX + 10 + "px")
+            .style("top", event.pageY - 10 + "px");
+        })
+        .on("mouseout", function () {
+          d3.select("#tooltip").style("opacity", 0);
+        });
+
+      node
+        .append("circle")
+        .attr("r", (d) => (d.data.size ? Math.sqrt(d.data.size) / 3 : 8))
+        .style("fill", (d) => colorScale[d.data.type]);
+
+      node
+        .append("text")
+        .attr("dy", ".35em")
+        .attr("x", (d) => (d.children ? -13 : 13))
+        .style("text-anchor", (d) => (d.children ? "end" : "start"))
+        .text((d) => d.data.name);
+
+      // Data Flow Visualization
+      const flowData = {
+        nodes: [
+          { id: "user", name: "User", type: "frontend", x: 100, y: 200 },
+          { id: "ui", name: "React UI", type: "frontend", x: 250, y: 200 },
+          { id: "api", name: "FastAPI", type: "api", x: 400, y: 200 },
+          { id: "agent", name: "AI Agent", type: "ai", x: 550, y: 150 },
+          {
+            id: "postgres",
+            name: "PostgreSQL",
+            type: "storage",
+            x: 700,
+            y: 100,
+          },
+          { id: "vector", name: "Vector DB", type: "storage", x: 700, y: 200 },
+          { id: "llm", name: "LLM", type: "ai", x: 550, y: 250 },
+          { id: "audit", name: "Audit Log", type: "storage", x: 700, y: 300 },
+        ],
+        links: [
+          { source: "user", target: "ui", label: "Request" },
+          { source: "ui", target: "api", label: "HTTP POST" },
+          { source: "api", target: "agent", label: "Process" },
+          { source: "agent", target: "vector", label: "RAG Search" },
+          { source: "agent", target: "llm", label: "Generate" },
+          { source: "agent", target: "postgres", label: "Store" },
+          { source: "api", target: "audit", label: "Log" },
+          { source: "postgres", target: "ui", label: "Response" },
+        ],
+      };
+
+      const flowSvg = d3
+        .select("#data-flow")
+        .append("svg")
+        .attr("width", 850)
+        .attr("height", 400);
+
+      // Draw links
+      flowSvg
+        .selectAll(".flow-link")
+        .data(flowData.links)
+        .enter()
+        .append("line")
+        .attr("class", "link")
+        .attr("x1", (d) => flowData.nodes.find((n) => n.id === d.source).x)
+        .attr("y1", (d) => flowData.nodes.find((n) => n.id === d.source).y)
+        .attr("x2", (d) => flowData.nodes.find((n) => n.id === d.target).x)
+        .attr("y2", (d) => flowData.nodes.find((n) => n.id === d.target).y)
+        .attr("marker-end", "url(#arrowhead)");
+
+      // Add arrowhead marker
+      flowSvg
+        .append("defs")
+        .append("marker")
+        .attr("id", "arrowhead")
+        .attr("viewBox", "0 -5 10 10")
+        .attr("refX", 25)
+        .attr("refY", 0)
+        .attr("markerWidth", 6)
+        .attr("markerHeight", 6)
+        .attr("orient", "auto")
+        .append("path")
+        .attr("d", "M0,-5L10,0L0,5")
+        .attr("fill", "#95a5a6");
+
+      // Draw nodes
+      const flowNodes = flowSvg
+        .selectAll(".flow-node")
+        .data(flowData.nodes)
+        .enter()
+        .append("g")
+        .attr("transform", (d) => `translate(${d.x},${d.y})`);
+
+      flowNodes
+        .append("circle")
+        .attr("r", 20)
+        .style("fill", (d) => colorScale[d.type])
+        .style("stroke", "#fff")
+        .style("stroke-width", 3);
+
+      flowNodes
+        .append("text")
+        .attr("dy", 35)
+        .attr("text-anchor", "middle")
+        .style("font-size", "12px")
+        .style("font-weight", "bold")
+        .text((d) => d.name);
+
+      // Database Schema Visualization
+      const schemaData = [
+        { table: "requirements", rows: 150, color: "#3498db" },
+        { table: "network_designs", rows: 320, color: "#e74c3c" },
+        { table: "validation_results", rows: 280, color: "#f39c12" },
+        { table: "audit_logs", rows: 1200, color: "#9b59b6" },
+        { table: "technical_validations", rows: 450, color: "#2ecc71" },
+      ];
+
+      const schemaSvg = d3
+        .select("#database-schema")
+        .append("svg")
+        .attr("width", 1100)
+        .attr("height", 300);
+
+      const barWidth = 180;
+      const barSpacing = 40;
+
+      schemaData.forEach((d, i) => {
+        const g = schemaSvg
+          .append("g")
+          .attr(
+            "transform",
+            `translate(${i * (barWidth + barSpacing) + 50}, 50)`,
+          );
+
+        // Bar
+        g.append("rect")
+          .attr("width", barWidth)
+          .attr("height", d.rows / 5)
+          .attr("fill", d.color)
+          .attr("rx", 5);
+
+        // Table name
+        g.append("text")
+          .attr("x", barWidth / 2)
+          .attr("y", -10)
+          .attr("text-anchor", "middle")
+          .style("font-weight", "bold")
+          .style("font-size", "14px")
+          .text(d.table);
+
+        // Row count
+        g.append("text")
+          .attr("x", barWidth / 2)
+          .attr("y", d.rows / 5 + 20)
+          .attr("text-anchor", "middle")
+          .style("font-size", "12px")
+          .text(`${d.rows} records`);
+      });
+    </script>
+  </body>
+</html>

@@ -1,4 +1,3 @@
-
 # Generative-AI-Network-Architecture-Design-System
 
 Sistema de Diseño y Validación de Arquitectura de Red Legacy y SDN impulsado por IA Generativa
@@ -16,11 +15,13 @@ Las organizaciones acumulan grandes volúmenes de conocimiento sobre arquitectur
 El sistema está compuesto por cinco capas principales:
 
 ### 1️⃣ **Presentation Layer** (React.js)
+
 - Interfaz de usuario empresarial
 - Visualización interactiva de diseños de red
 - Gestión de requisitos y parámetros
 
 ### 2️⃣ **API & Orchestration Layer** (FastAPI)
+
 - Orquestación de flujos de trabajo de IA
 - Gestión de autenticación y autorización
 - Interfaz con servidores MCP
@@ -28,17 +29,20 @@ El sistema está compuesto por cinco capas principales:
 - Auditabilidad y logging
 
 ### 3️⃣ **AI Reasoning Layer** (LLMs + Agent Framework)
+
 - Agente de análisis de requisitos
 - Agente de recuperación (RAG)
 - Agente de síntesis de diseño
 - Agente de validación y cumplimiento
 
 ### 4️⃣ **Knowledge & Retrieval Layer** (Bases de Datos Vectoriales + Relacionales)
+
 - Búsqueda semántica de diseños validados
 - Almacenamiento de arquitecturas históricas
 - Gestión de restricciones y reglas
 
 ### 5️⃣ **Integration Layer** (MCP Servers / Connectors)
+
 - Integración con aplicaciones web empresariales
 - Conectores a bases de datos legacy
 - Puentes de datos históricos
@@ -164,159 +168,322 @@ Generative-AI-Network-Architecture-Design-System/
 
 ```
 
-## 🏗️ Arquitectura del Sistema
+## 🏗️ Arquitectura del Sistema (Actualizada - Postgres-Backed)
 
-### Diagrama de 5 Capas del Sistema
+> **🎯 Nueva Arquitectura**: Sistema completamente migrado a PostgreSQL como almacenamiento autoritativo con auditoría completa, vector stores para RAG, y frontend React integrado.
+
+### 🔄 Arquitectura Completa del Sistema
 
 ```mermaid
 graph TB
-    subgraph "1. Presentation Layer"
-        A[React.js Frontend]
-        B[Next.js SSR]
-        C[Material UI / Ant Design]
-        D[D3.js / Cytoscape Network Viz]
-        E[React Query State Management]
+    subgraph "Frontend Layer - Next.js + React"
+        UI1[Upload Page<br/>PDF Ingestion]
+        UI2[Validation Page<br/>Design Validator]
+        UI3[Design Generator<br/>AI-Powered]
+        UI4[Audit Viewer<br/>Log Explorer]
+        UI5[Dashboard<br/>Overview]
     end
-    
-    subgraph "2. API & Orchestration Layer"
-        F[FastAPI Gateway]
-        G[Authentication & RBAC]
-        H[Workflow Orchestrator]
-        I[Audit Logger]
-        J[MCP Interface]
+
+    subgraph "API Gateway - FastAPI"
+        API1[/api/v1/design/*<br/>Design Routes]
+        API2[/api/v1/validation/*<br/>Validation Routes]
+        API3[/api/v1/historical/*<br/>PDF Upload]
+        API4[/api/v1/salesforce/*<br/>SF Ingestion]
+        API5[/api/v1/audit/*<br/>Audit Logs]
     end
-    
-    subgraph "3. AI Reasoning Layer"
-        K[Requirement Analysis Agent]
-        L[Retrieval Agent - RAG]
-        M[Design Synthesis Agent]
-        N[Validation & Compliance Agent]
-        O[LangChain / LlamaIndex]
-        P[OpenAI / Claude LLMs]
+
+    subgraph "Repository Layer - Data Access"
+        REPO1[RequirementsRepository]
+        REPO2[DesignRepository]
+        REPO3[ValidationRepository]
+        REPO4[AuditLogRepository]
     end
-    
-    subgraph "4. Knowledge & Retrieval Layer"
-        Q[(PostgreSQL / Oracle)]
-        R[(MongoDB Atlas Vector Search)]
-        S[(DataStax Astra DB)]
-        T[Semantic Search Engine]
-        U[Constraint Database]
+
+    subgraph "AI Agent Layer - Multi-Agent System"
+        AGENT1[Requirements Analyzer<br/>Extract & Structure]
+        AGENT2[RAG Retrieval Agent<br/>Semantic Search]
+        AGENT3[Design Synthesizer<br/>Generate Designs]
+        AGENT4[Validation Agent<br/>Dual-Mode Validation]
     end
-    
-    subgraph "5. Integration Layer"
-        V[MCP Servers]
-        W[Legacy DB Connectors]
-        X[Web App Integrations]
-        Y[Historical Data Bridge]
+
+    subgraph "LLM Providers"
+        LLM1[OpenAI GPT-4]
+        LLM2[Anthropic Claude]
     end
-    
-    A --> F
-    B --> F
-    C --> F
-    D --> F
-    E --> F
-    
-    F --> G
-    F --> H
-    F --> I
-    F --> J
-    
-    H --> K
-    H --> L
-    H --> M
-    H --> N
-    K --> O
-    L --> O
-    M --> O
-    N --> O
-    O --> P
-    
-    L --> T
-    T --> Q
-    T --> R
-    T --> S
-    M --> U
-    N --> U
-    U --> Q
-    
-    J --> V
-    V --> W
-    V --> X
-    V --> Y
-    W --> Q
-    
-    style F fill:#4a90e2,stroke:#333,stroke-width:3px,color:#fff
-    style O fill:#f39c12,stroke:#333,stroke-width:3px,color:#fff
-    style P fill:#e74c3c,stroke:#333,stroke-width:3px,color:#fff
-    style T fill:#9b59b6,stroke:#333,stroke-width:3px,color:#fff
+
+    subgraph "Authoritative Storage - PostgreSQL"
+        PG1[(requirements<br/>String IDs)]
+        PG2[(network_designs<br/>JSONB Data)]
+        PG3[(validation_results<br/>Scores & Issues)]
+        PG4[(audit_logs<br/>Full Trail)]
+        PG5[(technical_validations<br/>Salesforce Data)]
+    end
+
+    subgraph "Vector Storage - Embeddings"
+        VEC1[(MongoDB<br/>Vector Search)]
+        VEC2[(DataStax Astra<br/>Alternative)]
+    end
+
+    subgraph "Integration Services"
+        INT1[Salesforce Client<br/>OAuth + SOQL]
+        INT2[PDF Ingestion<br/>pypdf + Chunking]
+        INT3[Vector Store<br/>Abstraction Layer]
+    end
+
+    UI1 & UI2 & UI3 & UI4 & UI5 --> API1 & API2 & API3 & API4 & API5
+
+    API1 --> REPO2
+    API2 --> REPO3
+    API3 --> INT2
+    API4 --> INT1
+    API5 --> REPO4
+
+    REPO1 & REPO2 & REPO3 & REPO4 --> PG1 & PG2 & PG3 & PG4 & PG5
+
+    API1 --> AGENT1 & AGENT3
+    API2 --> AGENT4
+    API3 --> AGENT2
+
+    AGENT1 & AGENT2 & AGENT3 & AGENT4 --> LLM1 & LLM2
+    AGENT2 --> INT3
+    INT3 --> VEC1 & VEC2
+
+    INT1 --> PG5
+    INT2 --> VEC1
+
+    style PG1 fill:#2ecc71,stroke:#27ae60,stroke-width:3px,color:#fff
+    style PG2 fill:#2ecc71,stroke:#27ae60,stroke-width:3px,color:#fff
+    style PG3 fill:#2ecc71,stroke:#27ae60,stroke-width:3px,color:#fff
+    style PG4 fill:#2ecc71,stroke:#27ae60,stroke-width:3px,color:#fff
+    style LLM1 fill:#e74c3c,stroke:#c0392b,stroke-width:2px,color:#fff
+    style LLM2 fill:#e74c3c,stroke:#c0392b,stroke-width:2px,color:#fff
+    style AGENT1 fill:#f39c12,stroke:#d68910,stroke-width:2px
+    style AGENT2 fill:#f39c12,stroke:#d68910,stroke-width:2px
+    style AGENT3 fill:#f39c12,stroke:#d68910,stroke-width:2px
+    style AGENT4 fill:#f39c12,stroke:#d68910,stroke-width:2px
 ```
 
-### Flujo de Trabajo del Sistema (RAG + Validation)
+### 🗄️ Postgres Database Schema (Authoritative Storage)
+
+```mermaid
+erDiagram
+    REQUIREMENTS ||--o{ NETWORK_DESIGNS : "generates"
+    NETWORK_DESIGNS ||--o| VALIDATION_RESULTS : "validated_by"
+    REQUIREMENTS {
+        string requirements_id PK "req_uuid"
+        jsonb requirements_data "Full payload"
+        string created_by
+        timestamp created_at
+        timestamp updated_at
+    }
+    NETWORK_DESIGNS {
+        string design_id PK "design_uuid"
+        string name
+        text description
+        string network_type
+        jsonb design_data "Complete design"
+        string status "generated|validated|approved"
+        string version
+        string requirements_id FK
+        float validation_score
+        string validation_id FK
+        string created_by
+        timestamp created_at
+        timestamp updated_at
+    }
+    VALIDATION_RESULTS {
+        string validation_id PK "val_uuid"
+        string design_id FK
+        float overall_score
+        boolean passed
+        jsonb deterministic_validation
+        jsonb llm_validation
+        jsonb all_issues
+        timestamp validated_at
+    }
+    AUDIT_LOGS {
+        int id PK
+        string actor
+        string action
+        string status "success|failed"
+        string resource_type
+        string resource_id
+        text message
+        jsonb metadata
+        string trace_id
+        string request_id
+        timestamp created_at
+    }
+    TECHNICAL_VALIDATIONS {
+        int id PK
+        string salesforce_id
+        string name
+        jsonb validation_data
+        timestamp ingested_at
+    }
+```
+
+### 🔄 Flujo de Trabajo Completo (Actualizado con Postgres)
 
 ```mermaid
 sequenceDiagram
     participant User as Usuario
     participant UI as React Frontend
     participant API as FastAPI Gateway
-    participant ReqAgent as Requirement Agent
-    participant RAG as RAG Retrieval Agent
-    participant VectorDB as Vector Database
-    participant DesignAgent as Design Synthesis Agent
-    participant ValAgent as Validation Agent
-    participant RuleEngine as Rule Engine
-    participant LLM as LLM (Claude/GPT)
-    participant AuditLog as Audit System
-    
-    User->>UI: Ingresa requisitos de red
-    UI->>API: POST /api/design/create
-    API->>AuditLog: Log request
-    API->>ReqAgent: Analizar requisitos
-    
-    ReqAgent->>LLM: Extraer parámetros clave
-    LLM-->>ReqAgent: Estructura de requisitos
-    ReqAgent->>API: Requisitos estructurados
-    
-    API->>RAG: Buscar diseños similares
-    RAG->>VectorDB: Semantic search
-    VectorDB-->>RAG: Top-K diseños validados
-    RAG->>RAG: Filtrar por relevancia
-    RAG-->>API: Contexto validado
-    
-    API->>DesignAgent: Sintetizar diseño
-    DesignAgent->>LLM: Generate con contexto RAG
-    LLM-->>DesignAgent: Propuesta de diseño
-    DesignAgent-->>API: Diseño candidato
-    
-    API->>ValAgent: Validar diseño
-    
-    par Validación Determinística
-        ValAgent->>RuleEngine: Verificar reglas
-        RuleEngine-->>ValAgent: Resultados de reglas
-    and Validación Probabilística
-        ValAgent->>LLM: Razonamiento edge cases
-        LLM-->>ValAgent: Análisis LLM
+    participant Repo as Postgres Repository
+    participant Agent as AI Agent
+    participant LLM as LLM Provider
+    participant VectorDB as Vector Store
+    participant PG as PostgreSQL
+    participant Audit as Audit Logger
+
+    User->>UI: Upload PDF / Enter Requirements
+    UI->>API: POST /api/v1/historical/upload
+    API->>Audit: Log ingestion start
+
+    API->>Agent: Process PDF
+    Agent->>Agent: Extract & Chunk Text
+    Agent->>LLM: Generate Embeddings
+    LLM-->>Agent: Vector Embeddings
+    Agent->>VectorDB: Store Embeddings
+    VectorDB-->>Agent: Confirmation
+
+    API->>Audit: Log ingestion success
+    API-->>UI: Return document_id & stats
+
+    Note over User,Audit: Design Generation Flow
+
+    User->>UI: Enter Network Requirements
+    UI->>API: POST /api/v1/design/generate
+    API->>Audit: Log generation request
+
+    API->>Repo: Create Requirements
+    Repo->>PG: INSERT requirements
+    PG-->>Repo: requirements_id
+
+    API->>Agent: Analyze Requirements
+    Agent->>LLM: Extract Key Parameters
+    LLM-->>Agent: Structured Requirements
+
+    Agent->>VectorDB: RAG Search
+    VectorDB-->>Agent: Similar Designs (Top-K)
+
+    Agent->>LLM: Synthesize Design + RAG Context
+    LLM-->>Agent: Generated Design
+
+    API->>Repo: Create Design
+    Repo->>PG: INSERT network_designs
+    PG-->>Repo: design_id
+
+    API->>Agent: Validate Design
+
+    par Deterministic Validation
+        Agent->>Agent: Check Rules
+    and LLM Validation
+        Agent->>LLM: Analyze Edge Cases
+        LLM-->>Agent: Validation Result
     end
-    
-    ValAgent->>ValAgent: Calcular score & explicación
-    ValAgent-->>API: Resultado de validación
-    
-    alt Diseño válido
-        API->>AuditLog: Log diseño aprobado
-        API->>UI: Retornar diseño con score
-        UI->>User: Mostrar arquitectura validada
-    else Diseño inválido
-        API->>AuditLog: Log diseño rechazado
-        API->>DesignAgent: Regenerar con restricciones
-        DesignAgent->>LLM: Ajustar diseño
-        LLM-->>API: Diseño ajustado
-        API->>ValAgent: Re-validar
+
+    Agent-->>API: Validation Result
+
+    API->>Repo: Create Validation
+    Repo->>PG: INSERT validation_results
+    PG-->>Repo: validation_id
+
+    API->>Repo: Update Design Score
+    Repo->>PG: UPDATE network_designs
+
+    API->>Audit: Log generation complete
+    API-->>UI: Return Design + Validation
+    UI-->>User: Display Design & Score
+
+    Note over User,Audit: Audit Log Viewing
+
+    User->>UI: View Audit Logs
+    UI->>API: GET /api/v1/audit/logs
+    API->>Repo: List Audit Logs
+    Repo->>PG: SELECT audit_logs
+    PG-->>Repo: Log Records
+    Repo-->>API: Audit Logs
+    API-->>UI: Display Logs
+    UI-->>User: Show Audit Trail
+```
+
+### 📊 Data Flow Architecture (Postgres-Centric)
+
+```mermaid
+graph LR
+    subgraph "Data Sources"
+        PDF[PDF Documents]
+        SF[Salesforce]
+        USER[User Input]
     end
-    
-    User->>UI: Aprobar diseño
-    UI->>API: POST /api/design/approve
-    API->>AuditLog: Log final aprobación
-    AuditLog-->>API: Confirmación
-    API-->>UI: Diseño guardado
+
+    subgraph "Ingestion Layer"
+        PDF_SVC[PDF Ingestion Service]
+        SF_SVC[Salesforce Client]
+        API_SVC[API Endpoints]
+    end
+
+    subgraph "Processing Layer"
+        CHUNK[Text Chunking]
+        EMBED[Embedding Generation]
+        VALID[Validation Engine]
+    end
+
+    subgraph "Storage Layer - Postgres"
+        REQ_TBL[(requirements)]
+        DESIGN_TBL[(network_designs)]
+        VAL_TBL[(validation_results)]
+        AUDIT_TBL[(audit_logs)]
+        TECH_TBL[(technical_validations)]
+    end
+
+    subgraph "Vector Storage"
+        MONGO[(MongoDB Vector Search)]
+        DATASTAX[(DataStax Astra)]
+    end
+
+    subgraph "AI Layer"
+        AGENT[Multi-Agent System]
+        GPT[OpenAI GPT-4]
+        CLAUDE[Anthropic Claude]
+    end
+
+    PDF --> PDF_SVC
+    SF --> SF_SVC
+    USER --> API_SVC
+
+    PDF_SVC --> CHUNK
+    CHUNK --> EMBED
+    EMBED --> MONGO
+    EMBED --> DATASTAX
+
+    SF_SVC --> TECH_TBL
+
+    API_SVC --> AGENT
+    AGENT --> GPT
+    AGENT --> CLAUDE
+    AGENT --> MONGO
+    AGENT --> DATASTAX
+
+    AGENT --> REQ_TBL
+    AGENT --> DESIGN_TBL
+    AGENT --> VALID
+
+    VALID --> VAL_TBL
+
+    API_SVC --> AUDIT_TBL
+    PDF_SVC --> AUDIT_TBL
+    SF_SVC --> AUDIT_TBL
+
+    style REQ_TBL fill:#2ecc71,stroke:#27ae60,stroke-width:3px
+    style DESIGN_TBL fill:#2ecc71,stroke:#27ae60,stroke-width:3px
+    style VAL_TBL fill:#2ecc71,stroke:#27ae60,stroke-width:3px
+    style AUDIT_TBL fill:#2ecc71,stroke:#27ae60,stroke-width:3px
+    style TECH_TBL fill:#2ecc71,stroke:#27ae60,stroke-width:3px
+    style GPT fill:#e74c3c,stroke:#c0392b,stroke-width:2px
+    style CLAUDE fill:#e74c3c,stroke:#c0392b,stroke-width:2px
 ```
 
 ### Arquitectura de Agentes AI
@@ -326,20 +493,20 @@ graph LR
     subgraph "Agent Orchestration"
         Orchestrator[LangChain Orchestrator]
     end
-    
+
     subgraph "Agent Types"
         A1[Requirement Analysis Agent]
         A2[Retrieval Agent - RAG]
         A3[Design Synthesis Agent]
         A4[Validation Agent]
     end
-    
+
     subgraph "LLM Backends"
         L1[Claude API]
         L2[GPT-4 API]
         L3[Fallback LLM]
     end
-    
+
     subgraph "Tools & Memory"
         T1[Vector Search Tool]
         T2[SQL Query Tool]
@@ -348,39 +515,39 @@ graph LR
         M1[Conversation Memory]
         M2[Design History]
     end
-    
+
     subgraph "Output Validation"
         V1[Pydantic Models]
         V2[Structured Output Parser]
         V3[Schema Validator]
     end
-    
+
     Orchestrator --> A1
     Orchestrator --> A2
     Orchestrator --> A3
     Orchestrator --> A4
-    
+
     A1 --> L1
     A2 --> L1
     A3 --> L2
     A4 --> L1
-    
+
     L1 -.Fallback.-> L3
     L2 -.Fallback.-> L3
-    
+
     A2 --> T1
     A2 --> T2
     A4 --> T3
     A4 --> T4
-    
+
     A1 --> M1
     A3 --> M2
-    
+
     A1 --> V1
     A2 --> V2
     A3 --> V1
     A4 --> V3
-    
+
     style Orchestrator fill:#3498db,stroke:#333,stroke-width:3px,color:#fff
     style L1 fill:#e74c3c,stroke:#333,stroke-width:2px,color:#fff
     style L2 fill:#e74c3c,stroke:#333,stroke-width:2px,color:#fff
@@ -393,30 +560,30 @@ graph LR
 graph TD
     A[Nuevos Requisitos] --> B[Embedding Generation]
     B --> C[Vector Search]
-    
+
     C --> D[(Vector DB<br/>MongoDB Atlas)]
     C --> E[(Vector DB<br/>DataStax Astra)]
-    
+
     D --> F[Top-K Similar Designs]
     E --> F
-    
+
     F --> G[Relevance Filtering]
     G --> H[Token Budget Check]
     H --> I[Constraint Matching]
-    
+
     I --> J{Validated<br/>Designs Only?}
-    
+
     J -->|Yes| K[Prioritize in Context]
     J -->|No| L[Filter Out]
-    
+
     K --> M[Construct Prompt Context]
     L --> M
-    
+
     M --> N[LLM Generation]
     N --> O[Design Output]
-    
+
     P[(PostgreSQL<br/>Validated Designs)] -.->|Metadata| I
-    
+
     style D fill:#47a447,stroke:#333,stroke-width:2px
     style E fill:#47a447,stroke:#333,stroke-width:2px
     style J fill:#f0ad4e,stroke:#333,stroke-width:2px
@@ -428,44 +595,44 @@ graph TD
 ```mermaid
 graph TB
     A[Diseño Generado] --> B{Tipo de<br/>Validación}
-    
+
     B -->|Determinística| C[Rule Engine]
     B -->|Probabilística| D[LLM Validator]
-    
+
     C --> E[Capacity Rules]
     C --> F[Protocol Rules]
     C --> G[Compliance Rules]
     C --> H[Topology Rules]
-    
+
     E --> I[Score Acumulado]
     F --> I
     G --> I
     H --> I
-    
+
     D --> J[Edge Case Analysis]
     D --> K[Contextual Reasoning]
     D --> L[Best Practice Check]
-    
+
     J --> M[LLM Confidence Score]
     K --> M
     L --> M
-    
+
     I --> N[Validation Combiner]
     M --> N
-    
+
     N --> O{Score >=<br/>Threshold?}
-    
+
     O -->|Yes| P[Diseño Aprobado]
     O -->|No| Q[Diseño Rechazado]
-    
+
     P --> R[Explicación Aprobación]
     Q --> S[Explicación Rechazo]
-    
+
     R --> T[Audit Log]
     S --> T
-    
+
     T --> U[Usuario / Sistema]
-    
+
     style C fill:#5bc0de,stroke:#333,stroke-width:2px
     style D fill:#f0ad4e,stroke:#333,stroke-width:2px
     style O fill:#d9534f,stroke:#333,stroke-width:3px,color:#fff
@@ -473,13 +640,34 @@ graph TB
     style Q fill:#d9534f,stroke:#333,stroke-width:2px,color:#fff
 ```
 
+## 📊 Interactive Architecture Visualization
+
+> **🎨 D3.js Interactive Diagrams**: Explore the system architecture with interactive visualizations
+
+Para una experiencia visual interactiva completa, abre el archivo de visualización:
+
+**[📂 docs/architecture-visualization.html](docs/architecture-visualization.html)**
+
+Esta visualización incluye:
+
+- **Component Hierarchy Tree**: Árbol interactivo de todos los componentes del sistema
+- **Data Flow Pipeline**: Flujo de datos desde la solicitud hasta la respuesta
+- **Database Schema**: Visualización del esquema de PostgreSQL con métricas
+
+### Características de la Visualización
+
+- ✅ **Interactiva**: Hover sobre nodos para ver detalles
+- ✅ **Codificada por colores**: Diferentes capas con colores distintivos
+- ✅ **Métricas en tiempo real**: Tamaños de componentes y conteos de registros
+- ✅ **Responsive**: Se adapta a diferentes tamaños de pantalla
+
 ## 🚀 Características Principales
 
 ### Core Capabilities
 
 - **🧠 Multi-Agent AI System**: Arquitectura de agentes especializados con LangChain/LlamaIndex para análisis, recuperación, síntesis y validación
 - **📚 RAG (Retrieval-Augmented Generation)**: Búsqueda semántica de diseños validados históricamente con filtrado estricto de relevancia
-- **✅ Dual Validation Framework**: 
+- **✅ Dual Validation Framework**:
   - Validación determinística (reglas de capacidad, protocolos, compliance)
   - Validación probabilística (razonamiento LLM para casos edge)
 - **🔍 Explicabilidad Total**: Todos los outputs incluyen scoring y explicaciones detalladas
@@ -489,81 +677,91 @@ graph TB
 - **📊 Structured Outputs**: Pydantic models para garantizar consistencia y validación de tipos
 - **🌐 Legacy + SDN Support**: Soporte completo para arquitecturas legacy y Software-Defined Networking
 - **🚫 No Autonomous Deployment**: Sin acciones autónomas de despliegue - control total del usuario
+- **🗄️ PostgreSQL Authoritative Storage**: Almacenamiento autoritativo con auditoría completa
+- **🔄 Alembic Migrations**: Sistema de migraciones de base de datos versionado
+- **📝 Complete Audit Trail**: Registro inmutable de todas las operaciones del sistema
 
 ## 🛠️ Stack Tecnológico Completo
 
 ### Frontend
-| Componente | Tecnología | Propósito |
-|------------|-----------|-----------|
-| **Framework** | React.js | Interfaz de usuario principal |
-| **SSR/Routing** | Next.js | Server-Side Rendering y enrutamiento |
-| **UI Components** | Material UI / Ant Design | Componentes empresariales |
-| **State Management** | React Query / TanStack Query | Gestión de estado de API |
-| **Network Visualization** | D3.js / Cytoscape.js | Visualización de grafos de red |
-| **Forms** | React Hook Form | Gestión de formularios |
-| **Charts** | Recharts / Chart.js | Dashboards y métricas |
+
+| Componente                | Tecnología                   | Propósito                            |
+| ------------------------- | ---------------------------- | ------------------------------------ |
+| **Framework**             | React.js                     | Interfaz de usuario principal        |
+| **SSR/Routing**           | Next.js                      | Server-Side Rendering y enrutamiento |
+| **UI Components**         | Material UI / Ant Design     | Componentes empresariales            |
+| **State Management**      | React Query / TanStack Query | Gestión de estado de API             |
+| **Network Visualization** | D3.js / Cytoscape.js         | Visualización de grafos de red       |
+| **Forms**                 | React Hook Form              | Gestión de formularios               |
+| **Charts**                | Recharts / Chart.js          | Dashboards y métricas                |
 
 ### Backend
-| Componente | Tecnología | Propósito |
-|------------|-----------|-----------|
-| **Framework** | FastAPI | API REST de alto rendimiento |
-| **Language** | Python 3.11+ | Lenguaje principal |
-| **Async Runtime** | Uvicorn | Servidor ASGI asíncrono |
-| **Validation** | Pydantic v2 | Modelos y validación de datos |
-| **API Docs** | OpenAPI / Swagger | Documentación automática |
-| **Task Queue** | Celery + Redis | Jobs asíncronos |
-| **Caching** | Redis | Cache distribuido |
+
+| Componente        | Tecnología        | Propósito                     |
+| ----------------- | ----------------- | ----------------------------- |
+| **Framework**     | FastAPI           | API REST de alto rendimiento  |
+| **Language**      | Python 3.11+      | Lenguaje principal            |
+| **Async Runtime** | Uvicorn           | Servidor ASGI asíncrono       |
+| **Validation**    | Pydantic v2       | Modelos y validación de datos |
+| **API Docs**      | OpenAPI / Swagger | Documentación automática      |
+| **Task Queue**    | Celery + Redis    | Jobs asíncronos               |
+| **Caching**       | Redis             | Cache distribuido             |
 
 ### AI & ML Layer
-| Componente | Tecnología | Propósito |
-|------------|-----------|-----------|
-| **LLM Providers** | OpenAI (GPT-4) / Anthropic (Claude) | Modelos de lenguaje |
-| **Agent Framework** | LangChain / LlamaIndex | Orquestación de agentes |
-| **Structured Output** | Pydantic | Outputs tipados y validados |
-| **Embeddings** | OpenAI Embeddings / sentence-transformers | Vectorización semántica |
-| **Prompt Management** | LangChain PromptTemplates | Gestión de prompts |
-| **LLM Monitoring** | LangSmith / Weights & Biases | Observabilidad de LLMs |
+
+| Componente            | Tecnología                                | Propósito                   |
+| --------------------- | ----------------------------------------- | --------------------------- |
+| **LLM Providers**     | OpenAI (GPT-4) / Anthropic (Claude)       | Modelos de lenguaje         |
+| **Agent Framework**   | LangChain / LlamaIndex                    | Orquestación de agentes     |
+| **Structured Output** | Pydantic                                  | Outputs tipados y validados |
+| **Embeddings**        | OpenAI Embeddings / sentence-transformers | Vectorización semántica     |
+| **Prompt Management** | LangChain PromptTemplates                 | Gestión de prompts          |
+| **LLM Monitoring**    | LangSmith / Weights & Biases              | Observabilidad de LLMs      |
 
 ### Databases
-| Componente | Tecnología | Propósito |
-|------------|-----------|-----------|
-| **Relational DB** | PostgreSQL / Oracle | Diseños validados autoritativos |
-| **Vector DB (Option 1)** | MongoDB Atlas Vector Search | Búsqueda semántica |
-| **Vector DB (Option 2)** | DataStax Astra DB | Búsqueda vectorial a escala |
-| **ORM** | SQLAlchemy | Object-Relational Mapping |
-| **Migrations** | Alembic | Migraciones de esquema |
-| **Cache** | Redis | Cache y message broker |
+
+| Componente               | Tecnología                  | Propósito                       |
+| ------------------------ | --------------------------- | ------------------------------- |
+| **Relational DB**        | PostgreSQL / Oracle         | Diseños validados autoritativos |
+| **Vector DB (Option 1)** | MongoDB Atlas Vector Search | Búsqueda semántica              |
+| **Vector DB (Option 2)** | DataStax Astra DB           | Búsqueda vectorial a escala     |
+| **ORM**                  | SQLAlchemy                  | Object-Relational Mapping       |
+| **Migrations**           | Alembic                     | Migraciones de esquema          |
+| **Cache**                | Redis                       | Cache y message broker          |
 
 ### Infrastructure & DevOps
-| Componente | Tecnología | Propósito |
-|------------|-----------|-----------|
-| **Containerization** | Docker | Contenedorización |
-| **Orchestration** | Kubernetes | Orquestación de contenedores |
-| **Service Mesh** | Istio (opcional) | Comunicación entre servicios |
-| **CI/CD** | GitHub Actions / GitLab CI | Integración y despliegue continuo |
-| **IaC** | Terraform / Pulumi | Infrastructure as Code |
-| **GitOps** | ArgoCD / Flux | Despliegue declarativo |
-| **Monitoring** | Prometheus + Grafana | Métricas y dashboards |
-| **Logging** | ELK Stack / Loki | Agregación de logs |
-| **Tracing** | Jaeger / OpenTelemetry | Distributed tracing |
+
+| Componente           | Tecnología                 | Propósito                         |
+| -------------------- | -------------------------- | --------------------------------- |
+| **Containerization** | Docker                     | Contenedorización                 |
+| **Orchestration**    | Kubernetes                 | Orquestación de contenedores      |
+| **Service Mesh**     | Istio (opcional)           | Comunicación entre servicios      |
+| **CI/CD**            | GitHub Actions / GitLab CI | Integración y despliegue continuo |
+| **IaC**              | Terraform / Pulumi         | Infrastructure as Code            |
+| **GitOps**           | ArgoCD / Flux              | Despliegue declarativo            |
+| **Monitoring**       | Prometheus + Grafana       | Métricas y dashboards             |
+| **Logging**          | ELK Stack / Loki           | Agregación de logs                |
+| **Tracing**          | Jaeger / OpenTelemetry     | Distributed tracing               |
 
 ### Security
-| Componente | Tecnología | Propósito |
-|------------|-----------|-----------|
-| **Authentication** | OAuth2 / OpenID Connect | Autenticación de usuarios |
-| **Authorization** | RBAC (Role-Based Access Control) | Control de acceso |
-| **Secrets Management** | HashiCorp Vault / AWS Secrets Manager | Gestión de secretos |
-| **API Security** | API Keys + JWT tokens | Seguridad de API |
-| **Network Security** | Zero Trust Architecture | Principios de seguridad |
-| **Encryption** | TLS 1.3 | Encriptación en tránsito |
-| **Compliance** | SOC2 / ISO 27001 readiness | Cumplimiento normativo |
+
+| Componente             | Tecnología                            | Propósito                 |
+| ---------------------- | ------------------------------------- | ------------------------- |
+| **Authentication**     | OAuth2 / OpenID Connect               | Autenticación de usuarios |
+| **Authorization**      | RBAC (Role-Based Access Control)      | Control de acceso         |
+| **Secrets Management** | HashiCorp Vault / AWS Secrets Manager | Gestión de secretos       |
+| **API Security**       | API Keys + JWT tokens                 | Seguridad de API          |
+| **Network Security**   | Zero Trust Architecture               | Principios de seguridad   |
+| **Encryption**         | TLS 1.3                               | Encriptación en tránsito  |
+| **Compliance**         | SOC2 / ISO 27001 readiness            | Cumplimiento normativo    |
 
 ### Integration Layer
-| Componente | Tecnología | Propósito |
-|------------|-----------|-----------|
-| **MCP Servers** | Custom MCP implementations | Conectores empresariales |
-| **Message Broker** | RabbitMQ / Kafka (opcional) | Mensajería asíncrona |
-| **API Gateway** | Kong / AWS API Gateway (opcional) | Gateway centralizado |
+
+| Componente         | Tecnología                        | Propósito                |
+| ------------------ | --------------------------------- | ------------------------ |
+| **MCP Servers**    | Custom MCP implementations        | Conectores empresariales |
+| **Message Broker** | RabbitMQ / Kafka (opcional)       | Mensajería asíncrona     |
+| **API Gateway**    | Kong / AWS API Gateway (opcional) | Gateway centralizado     |
 
 ## 📦 Instalación y Configuración
 
@@ -852,11 +1050,11 @@ import { NetworkVisualizer } from '@/components/NetworkVisualizer';
 import { RequirementForm } from '@/components/RequirementForm';
 
 export default function DesignPage() {
-  const { 
-    createDesign, 
-    design, 
-    isLoading, 
-    validationScore 
+  const {
+    createDesign,
+    design,
+    isLoading,
+    validationScore
   } = useNetworkDesign();
 
   const handleSubmit = async (requirements) => {
@@ -865,7 +1063,7 @@ export default function DesignPage() {
       useRAG: true,
       validationMode: 'strict'
     });
-    
+
     if (result.validationScore >= 0.9) {
       toast.success('Design created successfully!');
     }
@@ -874,13 +1072,13 @@ export default function DesignPage() {
   return (
     <div className="design-container">
       <RequirementForm onSubmit={handleSubmit} />
-      
+
       {isLoading && <LoadingSpinner />}
-      
+
       {design && (
         <>
           <ValidationScore score={validationScore} />
-          <NetworkVisualizer 
+          <NetworkVisualizer
             topology={design.topology}
             interactive={true}
             exportFormats={['pdf', 'png', 'svg']}
@@ -922,6 +1120,7 @@ ROLES = {
 #### 3. **Explicabilidad del Modelo**
 
 Cada diseño generado incluye:
+
 - Razonamiento paso a paso del LLM
 - Fuentes de conocimiento consultadas (RAG)
 - Score de confianza desagregado
@@ -936,7 +1135,7 @@ security_constraints:
   - require_human_approval: true
   - max_design_iterations: 10
   - validation_threshold: 0.85
-  - audit_retention_days: 2555  # 7 años
+  - audit_retention_days: 2555 # 7 años
   - pii_filtering: enabled
   - sensitive_data_masking: enabled
 ```
@@ -970,19 +1169,19 @@ scalability_features:
     - Horizontal pod autoscaling (HPA)
     - Load balancing con Kubernetes Services
     - Connection pooling para databases
-    
+
   ai_layer:
     - Async LLM calls con circuit breakers
     - Rate limiting y backoff exponencial
     - Multiple LLM providers para failover
     - Request batching cuando sea posible
-    
+
   data_layer:
     - Read replicas para PostgreSQL
     - Sharding en MongoDB Atlas
     - Redis cluster para alta disponibilidad
     - Database connection pooling
-    
+
   infrastructure:
     - Multi-zone Kubernetes deployment
     - Auto-scaling basado en CPU/memoria
@@ -1031,13 +1230,13 @@ monitoring:
     - Design generation time
     - Validation pass rate
     - Database query performance
-    
+
   logging:
     - Structured JSON logs
     - Correlation IDs para tracing
     - Log levels configurables
     - ELK stack para agregación
-    
+
   alerting:
     - High error rate (> 5%)
     - Slow LLM responses (> 30s)
@@ -1051,6 +1250,7 @@ monitoring:
 ### **Fase 1: Data Modeling & MCP Integration** (Semanas 1-4)
 
 **Objetivos:**
+
 - ✅ Diseño de esquema de base de datos PostgreSQL
 - ✅ Configuración de MongoDB Atlas Vector Search
 - ✅ Implementación de conectores MCP para apps legacy
@@ -1058,6 +1258,7 @@ monitoring:
 - ✅ Pipeline de ingestión de datos
 
 **Entregables:**
+
 - Esquema de DB con migraciones Alembic
 - MCP servers funcionando
 - Scripts de ETL para datos históricos
@@ -1068,6 +1269,7 @@ monitoring:
 ### **Fase 2: RAG & LLM Prototyping** (Semanas 5-8)
 
 **Objetivos:**
+
 - ✅ Configuración de embeddings y vectorización
 - ✅ Implementación de búsqueda semántica
 - ✅ Desarrollo de prompts para cada agente
@@ -1076,6 +1278,7 @@ monitoring:
 - ✅ Testing de calidad de generación
 
 **Entregables:**
+
 - RAG pipeline funcional
 - 4 agentes implementados (requirement, retrieval, design, validation)
 - Prompt library documentada
@@ -1086,6 +1289,7 @@ monitoring:
 ### **Fase 3: Validation Engine** (Semanas 9-12)
 
 **Objetivos:**
+
 - ✅ Implementación de reglas determinísticas
 - ✅ Validadores LLM para casos edge
 - ✅ Sistema de scoring y explicaciones
@@ -1093,6 +1297,7 @@ monitoring:
 - ✅ Testing exhaustivo de validaciones
 
 **Entregables:**
+
 - Rule engine completo
 - LLM validators integrados
 - Suite de tests de validación
@@ -1103,6 +1308,7 @@ monitoring:
 ### **Fase 4: Frontend & UX** (Semanas 13-16)
 
 **Objetivos:**
+
 - ✅ Desarrollo de UI en React/Next.js
 - ✅ Visualización de topologías con D3.js/Cytoscape
 - ✅ Dashboard de validación
@@ -1110,6 +1316,7 @@ monitoring:
 - ✅ UX testing y refinamiento
 
 **Entregables:**
+
 - Aplicación web completa
 - Componentes de visualización interactivos
 - Documentación de usuario
@@ -1120,6 +1327,7 @@ monitoring:
 ### **Fase 5: Security Hardening & Production Rollout** (Semanas 17-20)
 
 **Objetivos:**
+
 - ✅ Implementación de OAuth2/RBAC
 - ✅ Auditoría y logging completo
 - ✅ Security testing (penetration testing)
@@ -1132,6 +1340,7 @@ monitoring:
 - ✅ Go-live
 
 **Entregables:**
+
 - Sistema en producción
 - Infraestructura automatizada
 - Documentación completa (técnica + usuario)
@@ -1142,15 +1351,15 @@ monitoring:
 
 ### KPIs del Sistema
 
-| Métrica | Objetivo | Actual |
-|---------|----------|--------|
-| **Design Generation Time** | < 30 segundos | TBD |
-| **Validation Accuracy** | > 95% | TBD |
-| **RAG Retrieval Precision** | > 85% | TBD |
-| **User Approval Rate** | > 80% | TBD |
-| **System Uptime** | 99.5% | TBD |
-| **API Response Time (p95)** | < 2 segundos | TBD |
-| **LLM Call Success Rate** | > 98% | TBD |
+| Métrica                     | Objetivo      | Actual |
+| --------------------------- | ------------- | ------ |
+| **Design Generation Time**  | < 30 segundos | TBD    |
+| **Validation Accuracy**     | > 95%         | TBD    |
+| **RAG Retrieval Precision** | > 85%         | TBD    |
+| **User Approval Rate**      | > 80%         | TBD    |
+| **System Uptime**           | 99.5%         | TBD    |
+| **API Response Time (p95)** | < 2 segundos  | TBD    |
+| **LLM Call Success Rate**   | > 98%         | TBD    |
 
 ## 🧪 Testing
 
@@ -1246,19 +1455,19 @@ gantt
     section Fase 1
     Data Modeling           :2026-01-13, 28d
     MCP Integration        :2026-01-20, 21d
-    
+
     section Fase 2
     RAG Implementation     :2026-02-10, 28d
     LLM Prototyping       :2026-02-17, 21d
-    
+
     section Fase 3
     Validation Engine      :2026-03-10, 28d
     Testing               :2026-03-24, 14d
-    
+
     section Fase 4
     Frontend Development   :2026-04-07, 28d
     UX Refinement         :2026-04-28, 7d
-    
+
     section Fase 5
     Security Hardening    :2026-05-05, 14d
     Production Rollout    :2026-05-19, 14d
@@ -1298,6 +1507,7 @@ gantt
 ### Problemas Comunes
 
 #### LLM API Failures
+
 ```bash
 # Verificar circuit breaker status
 curl http://localhost:8000/health/circuit-breakers
@@ -1307,6 +1517,7 @@ kubectl logs -f deployment/backend | grep "llm_service"
 ```
 
 #### Database Connection Issues
+
 ```bash
 # Verificar conectividad PostgreSQL
 pg_isready -h localhost -p 5432
@@ -1316,6 +1527,7 @@ mongosh "mongodb+srv://cluster.mongodb.net/" --eval "db.runCommand({ping: 1})"
 ```
 
 #### Vector Search Performance
+
 ```bash
 # Verificar índices vectoriales
 # MongoDB Atlas Console > Search Indexes
@@ -1334,6 +1546,6 @@ redis-cli KEYS "embedding:*" | wc -l
 
 **Construido con ❤️ para ingenieros de red por ingenieros de red**
 
-*Powered by AI • Validated by Experts • Secured by Design*
+_Powered by AI • Validated by Experts • Secured by Design_
 
 </div>
