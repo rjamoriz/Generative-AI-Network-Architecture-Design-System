@@ -11,6 +11,7 @@ from app.core.config import get_settings
 from app.core.database import get_database_manager
 from app.services.llm_service import LLMService
 from app.models.network_design import NetworkDesign, DesignEmbedding
+from app.services.vector_store import get_vector_store
 
 logger = logging.getLogger(__name__)
 
@@ -262,31 +263,14 @@ class EmbeddingService:
     
     async def store_embedding_in_vector_db(self, design_embedding: DesignEmbedding):
         """
-        Store design embedding in vector database (MongoDB)
+        Store design embedding in vector database (MongoDB or Astra)
         
         Args:
             design_embedding: Design embedding to store
         """
         try:
-            collection = self.db_manager.get_mongodb_collection()
-            
-            document = {
-                "design_id": design_embedding.design_id,
-                "design_summary": design_embedding.design_summary,
-                "embedding": design_embedding.embedding,
-                "metadata": design_embedding.metadata,
-                "created_at": datetime.utcnow()
-            }
-            
-            # Upsert (update if exists, insert if not)
-            await collection.update_one(
-                {"design_id": design_embedding.design_id},
-                {"$set": document},
-                upsert=True
-            )
-            
-            logger.info(f"Stored embedding in vector DB: {design_embedding.design_id}")
-            
+            vector_store = get_vector_store()
+            await vector_store.store_embedding(design_embedding)
         except Exception as e:
             logger.error(f"Failed to store embedding in vector DB: {e}")
             raise

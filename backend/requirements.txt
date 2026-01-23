@@ -42,7 +42,7 @@ langchain==0.1.4
 langchain-openai==0.0.5
 langchain-anthropic==0.0.1
 langchain-community==0.0.16
-langsmith==0.0.77
+langsmith>=0.0.83
 
 # Alternative: LlamaIndex
 # llama-index==0.9.48
@@ -88,6 +88,7 @@ kombu==5.3.5
 jsonschema==4.20.0
 pyyaml==6.0.1
 python-dateutil==2.8.2
+pypdf==4.0.1
 
 # ============================================================================
 # Monitoring & Logging
@@ -102,7 +103,7 @@ pytest==7.4.4
 pytest-asyncio==0.23.3
 pytest-cov==4.1.0
 pytest-mock==3.12.0
-httpx-mock==0.7.0
+# httpx-mock==0.7.0  # Commented out - not available for Python 3.11
 
 # ============================================================================
 # Development Tools
@@ -112,6 +113,11 @@ flake8==7.0.0
 mypy==1.8.0
 isort==5.13.2
 pre-commit==3.6.0
+
+# ============================================================================
+# System Monitoring
+# ============================================================================
+psutil==5.9.8
 
 # ============================================================================
 # Documentation

@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  # ============================================================================
+  # Backend API Only (for quick testing)
+  # ============================================================================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: network-design-backend
+    ports:
+      - "8000:8000"
+    environment:
+      # Application
+      - ENVIRONMENT=development
+      - LOG_LEVEL=INFO
+      
+      # Mock database connections (will fail gracefully)
+      - POSTGRES_HOST=localhost
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=network_designs
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres_dev_password_123
+      
+      - MONGODB_URI=mongodb://localhost:27017
+      - MONGODB_DB=network_designs
+      
+      - REDIS_HOST=localhost
+      - REDIS_PORT=6379
+      
+      # Test API Keys (not real)
+      - OPENAI_API_KEY=sk-test-key-not-real
+      - ANTHROPIC_API_KEY=sk-ant-test-key-not-real
+      
+    volumes:
+      - ./backend/app:/app/app
+      - backend-logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+# ============================================================================
+# Volumes
+# ============================================================================
+volumes:
+  backend-logs:
+    driver: local

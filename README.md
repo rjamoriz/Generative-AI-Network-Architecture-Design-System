@@ -597,7 +597,7 @@ Editar `.env` con tus configuraciones:
 ```env
 # API Keys
 OPENAI_API_KEY=sk-your-openai-key
-ANTHROPIC_API_KEY=sk-ant-your-claude-key
+ANTHROPIC_API_KEY=YOUR_ANTHROPIC_API_KEY_HERE
 
 # Database Configuration
 POSTGRES_HOST=localhost

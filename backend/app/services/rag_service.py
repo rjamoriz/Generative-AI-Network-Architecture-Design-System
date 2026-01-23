@@ -9,6 +9,7 @@ import numpy as np
 from app.core.config import get_settings
 from app.core.database import get_database_manager
 from app.services.embedding_service import EmbeddingService
+from app.services.vector_store import get_vector_store
 from app.models.network_design import NetworkDesign, DesignEmbedding, NetworkType, TopologyType
 from app.models.requirements import NetworkRequirements
 
@@ -58,62 +59,21 @@ class RAGService:
         similarity = dot_product / (norm1 * norm2)
         return float(similarity)
     
-    async def _vector_search_mongodb(self,
-                                     query_embedding: List[float],
-                                     top_k: int,
-                                     filters: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
+    async def _vector_search(self,
+                             query_embedding: List[float],
+                             top_k: int,
+                             filters: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
         """
-        Perform vector search in MongoDB Atlas
-        
-        Args:
-            query_embedding: Query vector
-            top_k: Number of results to return
-            filters: Optional metadata filters
-        
-        Returns:
-            List of matching documents with scores
+        Perform vector search using configured vector store (MongoDB or Astra)
         """
         try:
-            collection = self.db_manager.get_mongodb_collection()
-            
-            # Build aggregation pipeline for vector search
-            pipeline = [
-                {
-                    "$vectorSearch": {
-                        "index": "vector_index",
-                        "path": "embedding",
-                        "queryVector": query_embedding,
-                        "numCandidates": top_k * 10,  # Oversample for better results
-                        "limit": top_k
-                    }
-                },
-                {
-                    "$project": {
-                        "design_id": 1,
-                        "design_summary": 1,
-                        "metadata": 1,
-                        "score": {"$meta": "vectorSearchScore"}
-                    }
-                }
-            ]
-            
-            # Add metadata filters if provided
-            if filters:
-                match_stage = {"$match": {}}
-                for key, value in filters.items():
-                    match_stage["$match"][f"metadata.{key}"] = value
-                pipeline.insert(1, match_stage)
-            
-            # Execute search
-            cursor = collection.aggregate(pipeline)
-            results = await cursor.to_list(length=top_k)
-            
+            vector_store = get_vector_store()
+            results = await vector_store.search(query_embedding, top_k, filters)
             logger.info(f"Vector search returned {len(results)} results")
             return results
-            
         except Exception as e:
-            logger.error(f"MongoDB vector search failed: {e}")
-            # Fallback to brute force search
+            logger.error(f"Vector search failed: {e}")
+            # Fallback to brute force search (MongoDB only)
             return await self._brute_force_search(query_embedding, top_k, filters)
     
     async def _brute_force_search(self,
@@ -191,7 +151,7 @@ class RAGService:
         query_embedding = await self.embedding_service.generate_embedding(query_text)
         
         # Perform vector search
-        results = await self._vector_search_mongodb(query_embedding, top_k, filters)
+        results = await self._vector_search(query_embedding, top_k, filters)
         
         # Filter by similarity threshold
         filtered_results = [

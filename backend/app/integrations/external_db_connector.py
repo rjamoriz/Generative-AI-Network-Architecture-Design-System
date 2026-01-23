@@ -7,9 +7,15 @@ import logging
 from datetime import datetime
 import asyncpg
 from motor.motor_asyncio import AsyncIOMotorClient
-import oracledb
 
-from app.core.config import settings
+# Optional import for Oracle support
+try:
+    import oracledb
+    ORACLE_AVAILABLE = True
+except ImportError:
+    ORACLE_AVAILABLE = False
+    oracledb = None
+
 from app.models.network_design import NetworkDesign, DesignStatus
 
 logger = logging.getLogger(__name__)

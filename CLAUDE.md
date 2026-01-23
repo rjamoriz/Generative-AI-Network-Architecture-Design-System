@@ -188,7 +188,7 @@ Generative-AI-Network-Architecture-Design-System/
 ```env
 # API Keys
 OPENAI_API_KEY=sk-your-openai-key
-ANTHROPIC_API_KEY=sk-ant-your-claude-key
+ANTHROPIC_API_KEY=YOUR_ANTHROPIC_API_KEY_HERE
 
 # Database
 POSTGRES_HOST=localhost

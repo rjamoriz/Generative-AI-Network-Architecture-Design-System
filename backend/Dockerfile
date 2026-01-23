@@ -54,10 +54,14 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Copy application code
 COPY --chown=appuser:appuser ./app /app/app
+COPY --chown=appuser:appuser ./alembic /app/alembic
+COPY --chown=appuser:appuser ./alembic.ini /app/alembic.ini
+COPY --chown=appuser:appuser ./entrypoint.sh /app/entrypoint.sh
 
 # Create directories for logs and data
 RUN mkdir -p /app/logs /app/data && \
-    chown -R appuser:appuser /app
+    chown -R appuser:appuser /app && \
+    chmod +x /app/entrypoint.sh
 
 # Switch to non-root user
 USER appuser
@@ -69,5 +73,6 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Run application
+# Set entrypoint and command
+ENTRYPOINT ["/app/entrypoint.sh"]
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]

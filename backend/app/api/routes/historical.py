@@ -3,13 +3,19 @@ Historical Design API Routes
 Endpoints for querying and analyzing historical network design data
 """
 from typing import List, Dict, Any, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status, UploadFile, File, Form
 import logging
 
 from app.models.requirements import NetworkRequirements
 from app.models.network_design import NetworkType, SecurityLevel
+from app.models.pdf_ingestion import PdfIngestionResult
 from app.integrations.external_db_connector import ExternalDatabaseConnector, get_external_db_connector
 from app.services.historical_analysis_service import HistoricalAnalysisService, get_historical_analysis_service
+from app.services.embedding_service import EmbeddingService, get_embedding_service
+from app.services.pdf_ingestion_service import PdfIngestionService
+from app.core.database import get_postgres_session
+from app.db.postgres_repository import AuditLogRepository
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
@@ -94,6 +100,62 @@ async def connect_mongodb(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Connection failed: {str(e)}"
+        )
+
+
+@router.post("/upload", response_model=PdfIngestionResult)
+async def upload_historical_pdf(
+    file: UploadFile = File(...),
+    generate_embeddings: bool = Form(True),
+    store_in_vector_db: bool = Form(True),
+    embedding_service: EmbeddingService = Depends(get_embedding_service),
+    session: AsyncSession = Depends(get_postgres_session),
+) -> PdfIngestionResult:
+    """
+    Upload a historical design PDF and store embeddings in vector DB
+    """
+    if not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Only PDF files are supported",
+        )
+
+    try:
+        content = await file.read()
+        ingestion_service = PdfIngestionService(embedding_service)
+        result = await ingestion_service.ingest_pdf(
+            file_name=file.filename,
+            content=content,
+            generate_embeddings=generate_embeddings,
+            store_in_vector_db=store_in_vector_db,
+        )
+        audit_repo = AuditLogRepository()
+        await audit_repo.log(
+            session,
+            action="pdf_ingest",
+            status="success",
+            resource_type="historical_pdf",
+            resource_id=result.get("document_id"),
+            message="PDF ingestion completed",
+            metadata=result,
+        )
+        return PdfIngestionResult(**result)
+    except Exception as e:
+        logger.error(f"PDF ingestion failed: {e}")
+        try:
+            audit_repo = AuditLogRepository()
+            await audit_repo.log(
+                session,
+                action="pdf_ingest",
+                status="failed",
+                resource_type="historical_pdf",
+                message=str(e),
+            )
+        except Exception:
+            pass
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"PDF ingestion failed: {str(e)}",
         )
 
 

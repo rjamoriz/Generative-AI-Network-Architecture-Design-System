@@ -11,6 +11,7 @@ from fastapi.responses import JSONResponse
 from app.core.config import get_settings, validate_configuration
 from app.core.database import get_database_manager
 from app.integrations.mcp_client import get_mcp_manager
+from app.integrations.salesforce_client import get_salesforce_client
 
 # Configure logging
 logging.basicConfig(
@@ -46,6 +47,12 @@ async def lifespan(app: FastAPI):
         health_status = await mcp_manager.health_check_all()
         logger.info(f"✓ MCP clients initialized: {health_status}")
         
+        # Initialize Salesforce (optional)
+        if settings.salesforce_enabled:
+            salesforce_client = get_salesforce_client()
+            salesforce_healthy = await salesforce_client.health_check()
+            logger.info(f"✓ Salesforce integration: {'healthy' if salesforce_healthy else 'unhealthy'}")
+        
         logger.info("=" * 80)
         logger.info("Application startup complete")
         logger.info("=" * 80)
@@ -71,6 +78,12 @@ async def lifespan(app: FastAPI):
         mcp_manager = get_mcp_manager()
         await mcp_manager.close_all()
         logger.info("✓ MCP clients closed")
+        
+        # Close Salesforce client (optional)
+        if settings.salesforce_enabled:
+            salesforce_client = get_salesforce_client()
+            await salesforce_client.close()
+            logger.info("✓ Salesforce client closed")
         
         logger.info("=" * 80)
         logger.info("Application shutdown complete")
@@ -148,6 +161,12 @@ async def health_check():
         mcp_manager = get_mcp_manager()
         mcp_health = await mcp_manager.health_check_all()
         
+        # Check Salesforce (optional)
+        salesforce_health: str | bool = "disabled"
+        if settings.salesforce_enabled:
+            salesforce_client = get_salesforce_client()
+            salesforce_health = await salesforce_client.health_check()
+        
         # Overall health status
         all_healthy = postgres_healthy and redis_healthy
         
@@ -156,7 +175,8 @@ async def health_check():
             "components": {
                 "postgres": "healthy" if postgres_healthy else "unhealthy",
                 "redis": "healthy" if redis_healthy else "unhealthy",
-                "mcp_servers": mcp_health
+                "mcp_servers": mcp_health,
+                "salesforce": salesforce_health
             }
         }
         
@@ -199,13 +219,20 @@ async def config_status():
         "environment": settings.environment
     }
 
-
-# ============================================================================
 # API Routes
 # ============================================================================
 
-from app.api.routes import design, validation, retrieval, admin, historical, migration, metrics
-
+from app.api.routes import (
+    design,
+    validation,
+    retrieval,
+    admin,
+    historical,
+    migration,
+    metrics,
+    salesforce,
+    audit,
+)
 app.include_router(design.router, prefix="/api/v1/design", tags=["Design"])
 app.include_router(validation.router, prefix="/api/v1/validation", tags=["Validation"])
 app.include_router(retrieval.router, prefix="/api/v1/retrieval", tags=["Retrieval"])
@@ -213,7 +240,10 @@ app.include_router(admin.router, prefix="/api/v1/admin", tags=["Admin"])
 app.include_router(historical.router, prefix="/api/v1/historical", tags=["Historical Data"])
 app.include_router(migration.router, prefix="/api/v1/migration", tags=["Data Migration"])
 app.include_router(metrics.router, prefix="/api/v1/metrics", tags=["Metrics & Monitoring"])
+app.include_router(salesforce.router, prefix="/api/v1/salesforce", tags=["Salesforce"])
+app.include_router(audit.router, prefix="/api/v1/audit", tags=["Audit"])
 
+logger.info("API routes registered successfully")
 
 if __name__ == "__main__":
     import uvicorn

@@ -71,11 +71,15 @@ class Settings(BaseSettings):
     mongodb_collection: str = Field(default="design_embeddings", description="MongoDB collection for embeddings")
     mongodb_timeout: int = Field(default=10000, description="MongoDB timeout in milliseconds")
     
+    # Vector Store Provider
+    vector_store_provider: str = Field(default="mongodb", description="Vector store provider: mongodb or astra")
+    
     # DataStax Astra DB Settings (Alternative to MongoDB)
     astra_db_id: Optional[str] = Field(default=None, description="Astra DB ID")
     astra_db_region: Optional[str] = Field(default=None, description="Astra DB region")
     astra_db_token: Optional[str] = Field(default=None, description="Astra DB token - injected at runtime")
     astra_db_keyspace: str = Field(default="network_designs", description="Astra DB keyspace")
+    astra_db_collection: str = Field(default="design_embeddings", description="Astra DB collection for embeddings")
     
     # Redis Settings
     redis_host: str = Field(default="localhost", description="Redis host")
@@ -106,6 +110,22 @@ class Settings(BaseSettings):
     mcp_web_app_api_key: Optional[str] = Field(default=None, description="Web app API key - injected at runtime")
     mcp_timeout: int = Field(default=30, description="MCP server timeout in seconds")
     mcp_max_retries: int = Field(default=3, description="MCP server max retries")
+    
+    # Salesforce Settings (Technical Validation Source)
+    salesforce_enabled: bool = Field(default=False, description="Enable Salesforce integration")
+    salesforce_login_url: str = Field(default="https://login.salesforce.com", description="Salesforce OAuth login URL")
+    salesforce_instance_url: Optional[str] = Field(default=None, description="Salesforce instance URL")
+    salesforce_client_id: Optional[str] = Field(default=None, description="Salesforce Connected App client ID")
+    salesforce_client_secret: Optional[str] = Field(default=None, description="Salesforce Connected App client secret")
+    salesforce_username: Optional[str] = Field(default=None, description="Salesforce username")
+    salesforce_password: Optional[str] = Field(default=None, description="Salesforce password")
+    salesforce_security_token: Optional[str] = Field(default=None, description="Salesforce security token")
+    salesforce_access_token: Optional[str] = Field(default=None, description="Salesforce access token (if pre-generated)")
+    salesforce_api_version: str = Field(default="v60.0", description="Salesforce API version")
+    salesforce_validation_soql: str = Field(
+        default="SELECT Id, Name FROM Technical_Validation__c LIMIT 100",
+        description="SOQL query for validation records"
+    )
     
     # Celery Task Queue Settings
     celery_broker_url: Optional[str] = Field(default=None, description="Celery broker URL (Redis)")
@@ -203,8 +223,10 @@ class Settings(BaseSettings):
             missing.append("PostgreSQL credentials (POSTGRES_HOST, POSTGRES_USER, POSTGRES_PASSWORD)")
         
         # Check vector database (at least one required)
-        if not self.mongodb_uri and not self.astra_db_token:
-            missing.append("Vector database credentials (MONGODB_URI or ASTRA_DB_TOKEN)")
+        if self.vector_store_provider.lower() == "mongodb" and not self.mongodb_uri:
+            missing.append("MongoDB vector store credentials (MONGODB_URI)")
+        if self.vector_store_provider.lower() == "astra" and not self.astra_db_token:
+            missing.append("DataStax Astra credentials (ASTRA_DB_TOKEN)")
         
         # Check security settings in production
         if self.is_production:

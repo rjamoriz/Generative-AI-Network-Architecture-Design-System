@@ -5,9 +5,12 @@ Endpoints for network design validation
 from fastapi import APIRouter, Depends, HTTPException, status
 import logging
 
-from app.models.network_design import NetworkDesign
+from app.models.network_design import NetworkDesign, DesignStatus
 from app.models.validation_result import ValidationResult, ValidationRequest
 from app.agents.validation_agent import ValidationAgent, get_validation_agent
+from app.core.database import get_postgres_session
+from app.db.postgres_repository import DesignRepository, ValidationRepository, AuditLogRepository
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +21,8 @@ router = APIRouter()
 async def validate_design(
     design: NetworkDesign,
     validation_mode: str = "strict",
-    validator: ValidationAgent = Depends(get_validation_agent)
+    validator: ValidationAgent = Depends(get_validation_agent),
+    session: AsyncSession = Depends(get_postgres_session),
 ) -> ValidationResult:
     """
     Validate network design
@@ -41,7 +45,37 @@ async def validate_design(
         
         # Validate design
         result = await validator.validate_design(design, validation_mode)
+
+        # Persist validation if design is known
+        if design.design_id:
+            design_repo = DesignRepository()
+            validation_repo = ValidationRepository()
+            validation_id = await validation_repo.create(session, result, validation_mode)
+            status_value = DesignStatus.VALIDATED.value if result.passed else DesignStatus.REJECTED.value
+            await design_repo.update_validation(
+                session,
+                design.design_id,
+                validation_id,
+                result.overall_score,
+                status=status_value,
+            )
+            result.validation_id = validation_id
         
+        audit_repo = AuditLogRepository()
+        await audit_repo.log(
+            session,
+            action="design_validate",
+            status="success",
+            resource_type="network_design",
+            resource_id=design.design_id,
+            message="Design validation completed",
+            metadata={
+                "validation_id": result.validation_id,
+                "score": result.overall_score,
+                "passed": result.passed,
+                "mode": validation_mode,
+            },
+        )
         logger.info(f"Validation complete: score={result.overall_score:.2f}, passed={result.passed}")
         return result
         
@@ -49,6 +83,18 @@ async def validate_design(
         raise
     except Exception as e:
         logger.error(f"Validation failed: {e}")
+        try:
+            audit_repo = AuditLogRepository()
+            await audit_repo.log(
+                session,
+                action="design_validate",
+                status="failed",
+                resource_type="network_design",
+                resource_id=design.design_id,
+                message=str(e),
+            )
+        except Exception:
+            pass
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Validation failed: {str(e)}"
@@ -59,7 +105,8 @@ async def validate_design(
 async def validate_design_by_id(
     design_id: str,
     request: ValidationRequest,
-    validator: ValidationAgent = Depends(get_validation_agent)
+    validator: ValidationAgent = Depends(get_validation_agent),
+    session: AsyncSession = Depends(get_postgres_session),
 ) -> ValidationResult:
     """
     Validate design by ID
@@ -67,17 +114,62 @@ async def validate_design_by_id(
     Retrieves design from database and validates it
     """
     try:
-        # TODO: Implement actual database retrieval
-        logger.warning(f"validate_design_by_id not fully implemented for {design_id}")
-        raise HTTPException(
-            status_code=status.HTTP_501_NOT_IMPLEMENTED,
-            detail="Design retrieval from database not yet implemented"
+        design_repo = DesignRepository()
+        validation_repo = ValidationRepository()
+        record = await design_repo.get(session, design_id)
+
+        if not record:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Design not found"
+            )
+
+        design = design_repo.to_model(record)
+        result = await validator.validate_design(design, request.validation_mode)
+
+        validation_id = await validation_repo.create(session, result, request.validation_mode)
+        status_value = DesignStatus.VALIDATED.value if result.passed else DesignStatus.REJECTED.value
+        await design_repo.update_validation(
+            session,
+            design_id,
+            validation_id,
+            result.overall_score,
+            status=status_value,
         )
+        result.validation_id = validation_id
+        audit_repo = AuditLogRepository()
+        await audit_repo.log(
+            session,
+            action="design_validate",
+            status="success",
+            resource_type="network_design",
+            resource_id=design_id,
+            message="Design validation completed",
+            metadata={
+                "validation_id": result.validation_id,
+                "score": result.overall_score,
+                "passed": result.passed,
+                "mode": request.validation_mode,
+            },
+        )
+        return result
         
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Validation failed: {e}")
+        try:
+            audit_repo = AuditLogRepository()
+            await audit_repo.log(
+                session,
+                action="design_validate",
+                status="failed",
+                resource_type="network_design",
+                resource_id=design_id,
+                message=str(e),
+            )
+        except Exception:
+            pass
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Validation failed: {str(e)}"

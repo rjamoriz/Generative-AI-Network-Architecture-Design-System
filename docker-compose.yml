@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   # ============================================================================
@@ -15,24 +15,40 @@ services:
       # Application
       - ENVIRONMENT=production
       - LOG_LEVEL=INFO
-      
+
       # Database connections (use service names)
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
       - POSTGRES_DB=network_designs
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      
+
       - MONGODB_URI=mongodb://mongodb:27017
       - MONGODB_DB=network_designs
-      
+
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      
+
       # LLM API Keys (from .env file)
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      
+
+      # Vector Store Configuration
+      - VECTOR_STORE_PROVIDER=${VECTOR_STORE_PROVIDER:-mongodb}
+      - DATASTAX_TOKEN=${DATASTAX_TOKEN}
+      - DATASTAX_ENDPOINT=${DATASTAX_ENDPOINT}
+
+      # Salesforce Integration
+      - SALESFORCE_ENABLED=${SALESFORCE_ENABLED:-false}
+      - SALESFORCE_USERNAME=${SALESFORCE_USERNAME}
+      - SALESFORCE_PASSWORD=${SALESFORCE_PASSWORD}
+      - SALESFORCE_SECURITY_TOKEN=${SALESFORCE_SECURITY_TOKEN}
+      - SALESFORCE_DOMAIN=${SALESFORCE_DOMAIN:-login}
+
+      # Security
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - API_KEY_SALT=${API_KEY_SALT}
+
     depends_on:
       - postgres
       - mongodb
@@ -45,6 +61,39 @@ services:
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ============================================================================
+  # Frontend (Next.js)
+  # ============================================================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: network-design-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+    networks:
+      - network-design-net
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:3000",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -65,7 +114,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
-      - ./backend/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./backend/alembic:/docker-entrypoint-initdb.d/alembic:ro
     networks:
       - network-design-net
     restart: unless-stopped

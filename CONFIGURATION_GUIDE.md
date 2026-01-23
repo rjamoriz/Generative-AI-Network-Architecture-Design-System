@@ -33,7 +33,7 @@ Edit `.env` and set these **minimum required** values:
 # At least ONE LLM provider
 OPENAI_API_KEY=sk-your-key-here
 # OR
-ANTHROPIC_API_KEY=sk-ant-your-key-here
+ANTHROPIC_API_KEY=YOUR_ANTHROPIC_API_KEY_HERE
 
 # PostgreSQL Database
 POSTGRES_HOST=localhost

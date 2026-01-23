@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.minimal
+    container_name: network-design-backend-minimal
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=development
+      - LOG_LEVEL=INFO
+      - OPENAI_API_KEY=sk-test-not-real
+      - ANTHROPIC_API_KEY=sk-ant-test-not-real
+    volumes:
+      - ./backend/app:/app/app
+    restart: unless-stopped
+
+volumes:
+  backend-logs:
+    driver: local
